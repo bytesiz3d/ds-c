@@ -14,7 +14,7 @@ extern "C"
 #endif
 
 dsAllocator
-clib_allocator();
+allocator_clib();
 
 #ifdef __cplusplus
 }
@@ -39,7 +39,7 @@ _clib_free(void* self, void* base, int size)
 }
 
 dsAllocator
-clib_allocator()
+allocator_clib()
 {
 	dsAllocator allocator = {0};
 	allocator.alloc = _clib_alloc;

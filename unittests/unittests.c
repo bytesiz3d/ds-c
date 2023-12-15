@@ -15,18 +15,66 @@ UTEST(dsArray, Overview)
 	dsArray array = array_new(int);
 
 	int numbers[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	for (int i = 0; i < _countof(numbers); ++i)
+	for (int i = 0; i < (int)_countof(numbers); ++i)
 		array_push(&array, &numbers[i]);
 
-	int insert = 42;
-	array_insert_at(&array, 2, &insert);
+	array_insert_at(&array, 2, &(int){42});
 
 	array_remove_at(&array, 3);
 	array_remove_at(&array, 0);
 	array_remove_at(&array, -1);
 
 	int expected[] = { 1, 42, 3, 4, 5, 6 };
-	for (int i = 0; i < _countof(expected); ++i)
+	for (int i = 0; i < (int)_countof(expected); ++i)
+		EXPECT_EQ(expected[i], array_get(int, &array, i));
+
+	array_free(&array);
+}
+
+UTEST(dsArray, Insert_At)
+{
+	dsArray array = array_new(int);
+
+	array_insert_at(&array, 0, &(int){0});           // start
+	array_insert_at(&array, array.count, &(int){3}); // end
+	array_insert_at(&array, 1, &(int){1});           // middle
+	array_insert_at(&array, 2, &(int){2});           // middle
+
+	int expected[] = { 0, 1, 2, 3 };
+	for (int i = 0; i < (int)_countof(expected); ++i)
+		EXPECT_EQ(expected[i], array_get(int, &array, i));
+
+	array_free(&array);
+}
+
+UTEST(dsArray, Remove_At)
+{
+	dsArray array = array_new(int);
+	int numbers[] = { 0, 1, 2, 3, 4, 5, 6 };
+	for (int i = 0; i < (int)_countof(numbers); ++i)
+		array_push(&array, &numbers[i]);
+
+	array_remove_at(&array, 6); // end
+	array_remove_at(&array, 0); // start
+	array_remove_at(&array, 3); // middle
+
+	int expected[] = { 1, 2, 3, 5 };
+	for (int i = 0; i < (int)_countof(expected); ++i)
+		EXPECT_EQ(expected[i], array_get(int, &array, i));
+
+	array_free(&array);
+}
+
+UTEST(dsArray, Grow)
+{
+	dsArray array = array_new_count(int, 2);
+	array_set(&array, 0, &(int){0});
+	array_set(&array, 1, &(int){1});
+	array_grow(&array, 4);
+	array_set(&array, 2, &(int){2});
+	array_set(&array, 3, &(int){3});
+	int expected[] = { 0, 1, 2, 3 };
+	for (int i = 0; i < (int)_countof(expected); ++i)
 		EXPECT_EQ(expected[i], array_get(int, &array, i));
 
 	array_free(&array);
@@ -43,24 +91,24 @@ hash_KV(void* base, int SIZE)
 {
 	(void)SIZE;
 	KV kv = *(KV*)base;
-	return murmur3_32(kv.key, (int)strlen(kv.key));
+	return hash_murmur3(kv.key, (int)strlen(kv.key));
 }
 
 UTEST(dsSet, Overview)
 {
 	dsSet set = set_new_hash(KV, hash_KV);
 	KV map[] = {
-		(KV){"my", 0},
-		(KV){"name", 1},
-		(KV){"is", 2},
-		(KV){"slim", 3},
-		(KV){"shady", 4},
-		(KV){"Marshall", 5},
-		(KV){"Mathers", 6},
-		(KV){"m'm", 7},
-		(KV){"Eminem", 8},
+		{"My", 0},
+		{"name", 1},
+		{"is", 2},
+		{"Slim", 3},
+		{"Shady", 4},
+		{"Marshall", 5},
+		{"Mathers", 6},
+		{"M'M", 7},
+		{"Eminem", 8},
 	};
-	for (int i = 0; i < _countof(map); ++i)
+	for (int i = 0; i < (int)_countof(map); ++i)
 		set_insert(&set, &map[i]);
 
 	for (KV* it = set_begin(&set); it != set_end(&set); ++it)

@@ -9,7 +9,7 @@
 typedef uint32_t (*dsHash)(void* base, int SIZE);
 
 uint32_t
-murmur3_32(void* base, int SIZE);
+hash_murmur3(void* base, int SIZE);
 
 typedef struct dsSet
 {
@@ -25,9 +25,9 @@ extern "C"
 {
 #endif
 
-#define set_new(T)                      set_new_ex(sizeof(T), murmur3_32, clib_allocator())
-#define set_new_hash(T, hash)           set_new_ex(sizeof(T), hash, clib_allocator())
-#define set_new_allocator(T, allocator) set_new_ex(sizeof(T), murmur3_32, allocator)
+#define set_new(T)                      set_new_ex(sizeof(T), hash_murmur3, allocator_clib())
+#define set_new_hash(T, hash)           set_new_ex(sizeof(T), hash, allocator_clib())
+#define set_new_allocator(T, allocator) set_new_ex(sizeof(T), hash_murmur3, allocator)
 dsSet
 set_new_ex(int SIZE, dsHash hash, dsAllocator allocator);
 
@@ -77,16 +77,17 @@ void
 _set_slot_clear(dsSet* set, int si) { array_get(dsSetSlot, &set->_slots, si).used = 0; }
 
 void
-_set_slot_use(dsSet* set, int si) { array_get(dsSetSlot, &set->_slots, si).used = 1; }
-
-void
 _set_slot_delete(dsSet* set, int si) { array_get(dsSetSlot, &set->_slots, si).used = 2; }
 
 int
 _set_slot_value_index(dsSet* set, int si) { return array_get(dsSetSlot, &set->_slots, si).index; }
 
 void
-_set_slot_set_value_index(dsSet* set, int si, int index) { array_get(dsSetSlot, &set->_slots, si).index = index; }
+_set_slot_use_value_index(dsSet* set, int si, int index)
+{
+	array_get(dsSetSlot, &set->_slots, si).index = index;
+	array_get(dsSetSlot, &set->_slots, si).used = 1;
+}
 
 int
 _set_slot_find_lookup(dsSet* set, void* value)
@@ -158,8 +159,7 @@ _set_grow(dsSet* set, int new_count)
 			int new_si = _set_slot_find_insert(&new_set, value);
 			assert(new_si >= 0);
 
-			_set_slot_set_value_index(&new_set, new_si, index);
-			_set_slot_use(&new_set, new_si);
+			_set_slot_use_value_index(&new_set, new_si, index);
 		}
 	}
 	array_free(&set->_slots);
@@ -227,8 +227,7 @@ set_insert(dsSet* set, void* value)
 		assert(si >= 0);
 	}
 
-	_set_slot_set_value_index(set, si, set->values.count);
-	_set_slot_use(set, si);
+	_set_slot_use_value_index(set, si, set->values.count);
 	array_push(&set->values, value);
 	return array_at(&set->values, -1);
 }
@@ -247,7 +246,7 @@ set_remove(dsSet* set, void* value)
 }
 
 uint32_t
-murmur_32_scramble(uint32_t k)
+_murmur_32_scramble(uint32_t k)
 {
 	k *= 0xcc9e2d51;
 	k = (k << 15) | (k >> 17);
@@ -256,7 +255,7 @@ murmur_32_scramble(uint32_t k)
 }
 
 uint32_t
-murmur3_32(void *base, int SIZE)
+hash_murmur3(void *base, int SIZE)
 {
 	const uint8_t* key = (const uint8_t*)base;
 	size_t len = SIZE;
@@ -269,7 +268,7 @@ murmur3_32(void *base, int SIZE)
 	{
 		memcpy(&k, key, sizeof(uint32_t));
 		key += sizeof(uint32_t);
-		h ^= murmur_32_scramble(k);
+		h ^= _murmur_32_scramble(k);
 		h = (h << 13) | (h >> 19);
 		h = h * 5 + 0xe6546b64;
 	}
@@ -280,7 +279,7 @@ murmur3_32(void *base, int SIZE)
 		k <<= 8;
 		k |= key[i - 1];
 	}
-	h ^= murmur_32_scramble(k);
+	h ^= _murmur_32_scramble(k);
 	/* Finalize. */
 	h ^= len;
 	h ^= h >> 16;

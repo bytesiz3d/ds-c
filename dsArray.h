@@ -17,8 +17,8 @@ extern "C"
 {
 #endif
 
-#define array_new(T)                      array_new_ex(sizeof(T), 0, clib_allocator())
-#define array_new_count(T, count)         array_new_ex(sizeof(T), count, clib_allocator())
+#define array_new(T)                      array_new_ex(sizeof(T), 0, allocator_clib())
+#define array_new_count(T, count)         array_new_ex(sizeof(T), count, allocator_clib())
 #define array_new_allocator(T, allocator) array_new_ex(sizeof(T), 0, allocator)
 dsArray
 array_new_ex(int SIZE, int count, dsAllocator allocator);

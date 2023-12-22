@@ -10,12 +10,14 @@
 #include "utest.h"
 UTEST_MAIN()
 
+#define COUNTOF(x) ((int)(sizeof(x) / sizeof(x[0])))
+
 UTEST(dsArray, Overview)
 {
 	dsArray array = array_new(int);
 
 	int numbers[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	for (int i = 0; i < (int)_countof(numbers); ++i)
+	for (int i = 0; i < COUNTOF(numbers); ++i)
 		array_push(&array, &numbers[i]);
 
 	array_insert_at(&array, 2, &(int){42});
@@ -25,7 +27,7 @@ UTEST(dsArray, Overview)
 	array_remove_at(&array, -1);
 
 	int expected[] = { 1, 42, 3, 4, 5, 6 };
-	for (int i = 0; i < (int)_countof(expected); ++i)
+	for (int i = 0; i < COUNTOF(expected); ++i)
 		EXPECT_EQ(expected[i], array_get(int, &array, i));
 
 	array_free(&array);
@@ -41,7 +43,7 @@ UTEST(dsArray, Insert_At)
 	array_insert_at(&array, 2, &(int){2});           // middle
 
 	int expected[] = { 0, 1, 2, 3 };
-	for (int i = 0; i < (int)_countof(expected); ++i)
+	for (int i = 0; i < COUNTOF(expected); ++i)
 		EXPECT_EQ(expected[i], array_get(int, &array, i));
 
 	array_free(&array);
@@ -51,7 +53,7 @@ UTEST(dsArray, Remove_At)
 {
 	dsArray array = array_new(int);
 	int numbers[] = { 0, 1, 2, 3, 4, 5, 6 };
-	for (int i = 0; i < (int)_countof(numbers); ++i)
+	for (int i = 0; i < COUNTOF(numbers); ++i)
 		array_push(&array, &numbers[i]);
 
 	array_remove_at(&array, 6); // end
@@ -59,7 +61,7 @@ UTEST(dsArray, Remove_At)
 	array_remove_at(&array, 3); // middle
 
 	int expected[] = { 1, 2, 3, 5 };
-	for (int i = 0; i < (int)_countof(expected); ++i)
+	for (int i = 0; i < COUNTOF(expected); ++i)
 		EXPECT_EQ(expected[i], array_get(int, &array, i));
 
 	array_free(&array);
@@ -74,7 +76,7 @@ UTEST(dsArray, Grow)
 	array_set(&array, 2, &(int){2});
 	array_set(&array, 3, &(int){3});
 	int expected[] = { 0, 1, 2, 3 };
-	for (int i = 0; i < (int)_countof(expected); ++i)
+	for (int i = 0; i < COUNTOF(expected); ++i)
 		EXPECT_EQ(expected[i], array_get(int, &array, i));
 
 	array_free(&array);
@@ -108,7 +110,7 @@ UTEST(dsSet, Overview)
 		{"M'M", 7},
 		{"Eminem", 8},
 	};
-	for (int i = 0; i < (int)_countof(map); ++i)
+	for (int i = 0; i < COUNTOF(map); ++i)
 		set_insert(&set, &map[i]);
 
 	for (KV* it = set_begin(&set); it != set_end(&set); ++it)

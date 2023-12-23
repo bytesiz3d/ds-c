@@ -14,5 +14,5 @@ if (DATA_STRUCTURES_BUILD_TESTS)
     add_subdirectory(unittests)
 endif ()
 
-add_library(ds INTERFACE dsAllocator.h dsArray.h dsSet.h)
+add_library(ds INTERFACE ds_allocator.h ds_array.h ds_set.h)
 target_include_directories(ds INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
